@@ -24,7 +24,7 @@ class Topping(Enum):
 
 
 class Fruit:
-
+    """A fruit with a name, size, color and taste."""
     def __init__(self,
                  name: str = "",
                  size: str = "medium",
@@ -40,9 +40,8 @@ class Fruit:
 
 
 class FruitSalad:
-
-    def __init__(self,
-                 name: str = "Фруктовий салат"):
+    """A set of fruits with an optional topping."""
+    def __init__(self, name: str = "Фруктовий салат"):
         self.name = name
         self.fruits = []
         self.topping = None
@@ -50,7 +49,16 @@ class FruitSalad:
     def add(self, fruit: Fruit):
         self.fruits.append(fruit)
 
-    def choose_topping(self):
+    def choose_topping(self) -> Topping:
+        """Pick a topping that balances the salad's taste.
+
+        Mostly sour salad -> sweet topping, mostly sweet salad -> sour
+        topping, otherwise a neutral one. If several toppings match the
+        needed taste, one is chosen at random.
+
+        Raises:
+            ValueError: if the salad has no fruits.
+        """
         if not self.fruits:
             raise ValueError("Салат порожній, топінг обрати неможливо")
 
@@ -58,22 +66,25 @@ class FruitSalad:
         sour = sum(1 for f in self.fruits if f.taste == Taste.SOUR)
 
         if sour > sweet:
-            self.topping = Topping.HONEY
+            needed = Taste.SWEET
         elif sweet > sour:
-            self.topping = Topping.LEMON_JUICE
+            needed = Taste.SOUR
         else:
-            self.topping = Topping.YOGURT
+            needed = Taste.NEUTRAL
 
+        candidates = [t for t in Topping if t.taste == needed]
+        self.topping = random.choice(candidates)
         return self.topping
 
     def mix(self):
+        """Shuffle the fruits in place."""
         random.shuffle(self.fruits)
 
-    def print_salad(self):
-        print(f"{self.name}:")
-        for fruit in self.fruits:
-            print(f"\t{fruit}")
-        print(f"\tТопінг: {self.topping if self.topping else 'немає'}")
+    def __str__(self):
+        lines = [f"{self.name}:"]
+        lines += [f"\t{fruit}" for fruit in self.fruits]
+        lines.append(f"\tТопінг: {self.topping if self.topping else 'немає'}")
+        return "\n".join(lines)
 
 
 def main():
@@ -85,13 +96,13 @@ def main():
     salad.add(Fruit("груша", "medium", "жовтий", Taste.NEUTRAL))
     salad.add(Fruit("полуниця", "small", "червоний", Taste.SWEET))
 
-    salad.print_salad()
+    print(salad)
 
     print("\nПеремішуємо...\n")
     salad.mix()
 
     salad.choose_topping()
-    salad.print_salad()
+    print(salad)
 
 
 if __name__ == "__main__":
